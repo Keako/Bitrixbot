@@ -6,6 +6,8 @@ from bitrix24 import *
 bitrix = 'https://b24-n58f892e05b44f.bitrix24.ru/rest/1/aq26z15x07t0jhox/profile/'
 
 bot = telebot.TeleBot('1094315027:AAFR4nbVhTO5XUCCFXccZcKZzTVvKzSv_tg')
+botlog = telebot.TeleBot('1115207301:AAHyP7JM3LLjltBgyDnZfIDloG5bKOimWOk')
+logChatID = '270174742'
 link = ''
 
 def dt():
@@ -43,6 +45,7 @@ def AddLead(title, chatID, name, phone):
             bot.send_message(chatID, 'Данный клиент (' + phone + ' ' + name + ') уже присутствует в базе. За лид ответственный: ' + findOtvLead(phone) + '.')
         elif checkLEAD(check_phone) =='' and checkCONTACT(check_phone) !='':
             bot.send_message(chatID, 'Данный клиент (' + phone + ' ' + name + ') уже присутствует в базе. За контакт ответственный: ' + findOtvKont(phone) + '.')
+    botlog.send_message(logChatID, str_dt + ' ' + check_phone)
 #        @bot.message_handler(commands=['yes'])
 #        def Answer(bx24, title, phone):
 #            bx24.callMethod('crm.lead.add', fields={'TITLE':title,'PHONE':[{'VALUE':phone}]})
