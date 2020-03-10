@@ -22,10 +22,13 @@ def data_time():
     return str_dt
 
 def AddLead(title, chatID, name, phone):
+    log_check = ''
     check_phone = []
     bx24 = Bitrix24(bitrix)
     check_phone = bx24.callMethod('crm.duplicate.findbycomm',TYPE='PHONE', VALUES=[phone])
     str_dt = data_time()
+    for i in check_phone:
+        log_check = log_check + i
     if check_phone == []:
         bx24.callMethod('crm.lead.add', fields={'TITLE':title,'PHONE':[{'VALUE':('+'+phone)}]})
 #        bx24.callMethod('crm.contact.add', fields={'NAME':name,'PHONE':[{'VALUE':('+'+phone)}]})
