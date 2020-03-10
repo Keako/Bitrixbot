@@ -39,7 +39,7 @@ def AddLead(title, chatID, name, phone):
             bot.send_message(chatID, 'Данный клиент (' + phone + ' ' + name + ') уже присутствует в базе. За лид ответственный: ' + findResponsible(phone, bx24, 'lead') + '.')
         elif checkLEAD(check_phone) =='' and checkCONTACT(check_phone) !='':
             bot.send_message(chatID, 'Данный клиент (' + phone + ' ' + name + ') уже присутствует в базе. За контакт ответственный: ' + findResponsible(phone, bx24, 'contact') + '.')
-    botlog.send_message(logChatID, str_dt + ' ' + check_phone)
+    botlog.send_message(logChatID, str_dt + ' ' + log_check)
 
 
 def Parser(data, parse):
@@ -92,11 +92,11 @@ def checkCONTACT(data):
     return CONTACT
 
 
-def findResponsible(phone, bx24, find):
+def findResponsible(data, bx24, find):
     id_user = ''
     name = ''
     if find == 'contact':
-        search = bx24.callMethod('crm.contact.list',filter={'PHONE': phone}, select=["ASSIGNED_BY_ID"])
+        search = bx24.callMethod('crm.contact.list',filter={'PHONE': data}, select=["ASSIGNED_BY_ID"])
     elif find == 'lead':
         search = bx24.callMethod('crm.lead.list',filter={'PHONE': data}, select=["ASSIGNED_BY_ID"])   
     for i in search:
