@@ -3,12 +3,15 @@ import telebot
 import datetime
 from bitrix24 import *
 
-bitrix = 'https://b24-n58f892e05b44f.bitrix24.ru/rest/1/aq26z15x07t0jhox/profile/'
+bitrix = 'https://b24-n58f892e05b44f.bitrix24.ru/rest/1/aq26z15x07t0jhox/profile/' #father
+#bitrix = 'https://b24-n1aztj.bitrix24.ru/rest/1/2w1yp6c69vkysdnd/profile/' #my
 
-bot = telebot.TeleBot('1094315027:AAFR4nbVhTO5XUCCFXccZcKZzTVvKzSv_tg')
+bot = '1094315027:AAFR4nbVhTO5XUCCFXccZcKZzTVvKzSv_tg' #father
+#bot = '973793424:AAGVyKHiBSjlKDYo5o8Jw2ALtMaVkwkre-g' #my
 botlog = telebot.TeleBot('1115207301:AAHyP7JM3LLjltBgyDnZfIDloG5bKOimWOk')
 logChatID = '270174742'
 link = ''
+phone_parse = ['+','1','2','3','4','5','6','7','8','9','10',]
 
 def data_time():
     dt = datetime.datetime.now()
@@ -46,28 +49,9 @@ def Parser(data, parse):
     if parse == 'phone':
         phone = ''
         for i in data:
-            if i == '+':
-                phone = phone + i
-            elif i == '1':
-                phone = phone + i
-            elif i == '2':
-                phone = phone + i
-            elif i == '3':
-                phone = phone + i
-            elif i == '4':
-                phone = phone + i
-            elif i == '5':
-                phone = phone + i
-            elif i == '6':
-                phone = phone + i
-            elif i == '7':
-                phone = phone + i
-            elif i == '8':
-                phone = phone + i
-            elif i == '9':
-                phone = phone + i
-            elif i == '0':
-                phone = phone + i
+            for j in phone_parse:
+                if i == j:
+                    phone = phone + i
         return phone
     if parse == 'name':
         name = ''
