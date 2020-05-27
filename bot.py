@@ -1,19 +1,32 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 import telebot
 import datetime
+import sqlite3
 from bitrix24 import *
 
-bitrix = 'https://b24-n58f892e05b44f.bitrix24.ru/rest/1/aq26z15x07t0jhox/profile/' #father
-#bitrix = 'https://b24-n1aztj.bitrix24.ru/rest/1/2w1yp6c69vkysdnd/profile/' #my
+def get_db(table, search):
+	db = sqlite3.connect("/root/botbitrix/bot.db")
+	cur = db.cursor()
+	if table == 'bot':
+		sql = "SELECT webhook FROM bot WHERE title=" + "'" + search + "'"
+	if table == 'bots':
+		sql = "SELECT token FROM bots WHERE name=" + "'" + search + "'"
+	cur.execute(sql)
+	result = cur.fetchone()
+	db.close()
+	for i in result:
+		res_return = i
+	return res_return
 
-bot = '1094315027:AAFR4nbVhTO5XUCCFXccZcKZzTVvKzSv_tg' #father
-#bot = '973793424:AAGVyKHiBSjlKDYo5o8Jw2ALtMaVkwkre-g' #my
-botlog = telebot.TeleBot('1115207301:AAHyP7JM3LLjltBgyDnZfIDloG5bKOimWOk')
+bitrix_webhook = get_db('bot','Dad')
+bot = telebot.TeleBot(get_db('bots','Dad'))
+botlog = telebot.TeleBot(get_db('bots','Log'))
 logChatID = '270174742'
-link = ''
-phone_parse = ['+','1','2','3','4','5','6','7','8','9','10',]
+phone_parse = ['+','1','2','3','4','5','6','7','8','9','0']
+name_parse = ['Ц','К','Е','Н','Г','Ш','Щ','З','Х','Ф','В','А','П','Р','О','Л','Д','Ж','Э','Я','Ч','С','М','И','Т','Б','Ю','Ё']
 
-def data_time():
+#Перевод даты и времени из dictionary в string
+def data_time_str():
     dt = datetime.datetime.now()
     h = dt.hour
     mi = dt.minute
@@ -24,14 +37,14 @@ def data_time():
     str_dt = '[' + str(h) + ':' + str(mi) + ':' + str(s) + ' ' + str(d) + '.' + str(mo) + '.' + str(y) + ']'
     return str_dt
 
+#Добавление лида и вывод отладочной информации
 def AddLead(title, chatID, name, phone):
     log_check = ''
     check_phone = []
-    bx24 = Bitrix24(bitrix)
+    bx24 = Bitrix24(bitrix_webhook)
     check_phone = bx24.callMethod('crm.duplicate.findbycomm',TYPE='PHONE', VALUES=[phone])
-    str_dt = data_time()
     for i in check_phone:
-        log_check = log_check + i
+        log_check = log_check + i + ' '
     if check_phone == []:
         bx24.callMethod('crm.lead.add', fields={'TITLE':title,'PHONE':[{'VALUE':('+'+phone)}]})
 #        bx24.callMethod('crm.contact.add', fields={'NAME':name,'PHONE':[{'VALUE':('+'+phone)}]})
@@ -42,9 +55,9 @@ def AddLead(title, chatID, name, phone):
             bot.send_message(chatID, 'Данный клиент (' + phone + ' ' + name + ') уже присутствует в базе. За лид ответственный: ' + findResponsible(phone, bx24, 'lead') + '.')
         elif checkLEAD(check_phone) =='' and checkCONTACT(check_phone) !='':
             bot.send_message(chatID, 'Данный клиент (' + phone + ' ' + name + ') уже присутствует в базе. За контакт ответственный: ' + findResponsible(phone, bx24, 'contact') + '.')
-    botlog.send_message(logChatID, str_dt + ' ' + log_check)
+    botlog.send_message(logChatID, data_time_str() + ' ' + log_check)
 
-
+#Парсер телефона и имени клиента
 def Parser(data, parse):
     if parse == 'phone':
         phone = ''
@@ -54,12 +67,21 @@ def Parser(data, parse):
                     phone = phone + i
         return phone
     if parse == 'name':
+        check = 'false'
         name = ''
         for i in data:
-            if i != '+' and i != ' ' and i != '(' and i != ')' and i != '-' and i != '1' and i != '2' and i != '3' and i != '4' and i != '5' and i != '6' and i != '7' and i != '8' and i != '9'  and i != '0':
-                name = name + i        
+            if check == 'false':
+                for j in name_parse:
+                    if i == j:
+                        check = 'true'
+                        name = name + i
+                        break
+            elif check == 'true':
+                name = name + i
+        check = 'false'
         return name
 
+#Проверка лида
 def checkLEAD(data):
     led = ''
     key_exists ='LEAD' in data
@@ -67,7 +89,7 @@ def checkLEAD(data):
         led = data['LEAD']
     return led
 
-    
+#Проверка контакта
 def checkCONTACT(data):
     CONTACT = ''
     key_exists ='CONTACT' in data
@@ -75,7 +97,7 @@ def checkCONTACT(data):
         CONTACT = data['CONTACT']
     return CONTACT
 
-
+#Функция поиска ответсвенного
 def findResponsible(data, bx24, find):
     id_user = ''
     name = ''
@@ -100,13 +122,13 @@ def findResponsible(data, bx24, find):
                 break
     return name
 
-
+#Обработка полученных сообщений
 @bot.message_handler(content_types=['text'])
 def readTextForLead(message):
     phone = Parser(message.text, 'phone')
     name = Parser(message.text, 'name')
-    if name == '':
-        name = phone
     AddLead(message.text, message.chat.id, name, phone)
     
 bot.polling()
+
+
